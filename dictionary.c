@@ -75,7 +75,7 @@ bool check(const char *word)
 // Hashes word to a number
 unsigned int hash(const char *word)
 {
-    //taken from first result on "Good c hash functions" so answer
+    //taken from http://www.cse.yorku.ca/~oz/hash.html
     unsigned long hash = 5381;
     int c;
 
