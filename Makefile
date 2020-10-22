@@ -17,7 +17,7 @@ dictionary.o: dictionary.h
 
 .PHONY: clean
 clean:
-	rm -f *.o a.out core main
+	rm -f *.o a.out core speller
 
 .PHONY: all
 all: clean speller

@@ -1,5 +1,3 @@
-// Implements a dictionary's functionality
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,74 +7,60 @@
 
 #include "dictionary.h"
 
+//size of the hash table
 #define N 143107
+
 // Represents a node in a hash table
 typedef struct node
 {
-    char *word; // = malloc(LENGTH + 1);
+    char *word; 
     struct node *next;
 }
 node;
 
 
 char *buffer;
-// char *buf = buffer;
-int buf_size = 47;
 
 int free_counter = 0;
 
-// Number of buckets in hash table
-//const unsigned int N = 143107;
+//current size of the dictionary
 unsigned int dict_size = 0;
 
-int word_len;
 // Hash table
 node *table[N];
 
 node *places[N];
 int place_counter = 0;
 
-// Returns true if word is in dictionary else false
+// Returns true if word is in dictionary
 bool check(const char *word)
 {
+    static int word_len;
+
     word_len = strlen(word);
-    char *word_lower = malloc(word_len+1);
-    for(int i=0;i<=word_len;i++)
-    {
-	    if(word[i]>=65 && word[i]<=92) word_lower[i]=word[i]+32;
-	    else word_lower[i] = word[i];
-    }
-    int hsh = hash(word_lower);
+    char word_lower[word_len+1];
+
+    for(int i = 0; word_lower[i]= word[i]; i++)
+        //make it lower case
+	    if(word_lower[i]>=65 && word_lower[i]<=92)
+            word_lower[i] += 32;
+
+    unsigned int hsh = hash(word_lower);
     node *tmp = table[hsh];
 
-    if(tmp == NULL){
-        free(word_lower);
+    if(tmp == NULL)
         return false;
-    }
 
-    for(; tmp->next != NULL; tmp = tmp->next)
-    {
+    for(; tmp; tmp = tmp->next)
         if(!strcasecmp( tmp->word , word ))
-        {
-            free(word_lower);
             return true;
-        }
-    }
-    if(!strcasecmp( tmp->word , word ))
-    {
-        free(word_lower);
-        return true;
-    }
 
-
-    free(word_lower);
     return false;
 }
 
-// Hashes word to a number
+//Hash function taken from http://www.cse.yorku.ca/~oz/hash.html
 unsigned int hash(const char *word)
 {
-    //taken from http://www.cse.yorku.ca/~oz/hash.html
     unsigned long hash = 5381;
     int c;
 
@@ -86,71 +70,63 @@ unsigned int hash(const char *word)
     return (unsigned int) (hash % N);
 }
 
-// Loads dictionary into memory, returning true if successful else false
+// Loads dictionary into memory, returning true
 bool load(const char *dictionary)
 {
+    
+    static char buf_size = LENGTH;
 
     buffer = malloc(buf_size);
+
     FILE *file = fopen(dictionary, "r");
-    if(file == NULL) return false;
-    node *temp2;
-    char *wrd;
-    int hsh;
-    size_t len;
+    if(file == NULL)
+        return false;
+
+    node *already_there;
+    node *new_word;
+    unsigned int hsh;
+    char len;
 
     while ( fgets ( buffer, buf_size, file ) != NULL )
     {
+        //replace last \n with \0
         len = strlen(buffer);
         buffer[--len] = '\0';
 
-        node *temp = malloc(sizeof(struct node));
-        temp->word = buffer;
-        temp->next = NULL;
-        places[place_counter++] = temp;
+        new_word = malloc(sizeof(struct node));
+        new_word->word = buffer;
+        new_word->next = NULL;
+        places[place_counter++] = new_word;
 
         hsh = hash(buffer);
-        temp2 = table[hsh];
+        already_there = table[hsh];
 
-
-        if(temp2 == NULL)
+        if(already_there == NULL) //this is the first word to hash to this value
         {
-            table[hsh] = temp;
+            table[hsh] = new_word;
             buffer = malloc(buf_size);
             dict_size++;
             continue;
         }
 
-        while(temp2->next != NULL) temp2 = temp2->next;
+        while(already_there->next != NULL)
+            already_there = already_there->next;
 
-        temp2->next = temp;
+        already_there->next = new_word;
         dict_size++;
         buffer = malloc(buf_size);
     }
-    free(buffer);
+
     fclose(file);
     return true;
 }
 
-// Returns number of words in dictionary if loaded else 0 if not yet loaded
+// Returns number of words in dictionary if loaded, otherwise 0 
 unsigned int size(void)
 {
     return dict_size;
 }
 
-
-// void free_node(node *a)
-// {
-//     if (a->next == NULL)
-//     {
-//         free(a->word);
-//         free(a);
-//         return;
-//     }
-
-//     free_node(a->next);
-//     free(a->word);
-//     free(a);
-// }
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
