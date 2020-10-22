@@ -1,4 +1,23 @@
-speller:
-	clang -ggdb3 -O0 -Qunused-arguments -std=c11 -Wall -Werror -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wshadow -c -o speller.o speller.c
-	clang -ggdb3 -O0 -Qunused-arguments -std=c11 -Wall -Werror -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wshadow -c -o dictionary.o dictionary.c
-	clang -ggdb3 -O0 -Qunused-arguments -std=c11 -Wall -Werror -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wshadow -o speller speller.o dictionary.o -lm
+# Compilation flags
+CC = gcc
+
+LDLIBS = -lm
+
+CFLAGS = -g -Wall
+
+LDFLAGS = -g
+
+#End of compilation flags
+
+speller: speller.o dictionary.o
+
+speller.o: dictionary.h
+
+dictionary.o: dictionary.h
+
+.PHONY: clean
+clean:
+	rm -f *.o a.out core main
+
+.PHONY: all
+all: clean speller

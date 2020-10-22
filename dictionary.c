@@ -9,6 +9,7 @@
 
 #include "dictionary.h"
 
+#define N 143107
 // Represents a node in a hash table
 typedef struct node
 {
@@ -25,14 +26,14 @@ int buf_size = 47;
 int free_counter = 0;
 
 // Number of buckets in hash table
-const unsigned int N = 143107;
+//const unsigned int N = 143107;
 unsigned int dict_size = 0;
 
 int word_len;
 // Hash table
-node *table[N] = {NULL};
+node *table[N];
 
-node *places[N] = {NULL};
+node *places[N];
 int place_counter = 0;
 
 // Returns true if word is in dictionary else false
