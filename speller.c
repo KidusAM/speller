@@ -67,6 +67,10 @@ int main(int argc, char *argv[])
     int index = 0, misspellings = 0, words = 0;
     char word[LENGTH + 1];
 
+
+    char *suggestions[1];
+    char suggested_word[LENGTH];
+    suggestions[0] = suggested_word;
     // Spell-check each word in text
     for (int c = fgetc(file); c != EOF; c = fgetc(file))
     {
@@ -110,6 +114,13 @@ int main(int argc, char *argv[])
             // Check word's spelling
             getrusage(RUSAGE_SELF, &before);
             bool misspelled = !check(word);
+
+            if(misspelled)
+            {
+                if( getSuggestions(word, suggestions, 1) )
+                    printf("%s", *suggestions);
+            }
+
             getrusage(RUSAGE_SELF, &after);
 
             // Update benchmark

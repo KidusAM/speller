@@ -21,3 +21,7 @@ clean:
 
 .PHONY: all
 all: clean speller
+
+.PHONY: run
+run: all
+	./speller texts/mansfield.txt

@@ -10,6 +10,8 @@
 //size of the hash table
 #define N 143107
 
+int (*default_suggestion_funcs[])(char *, char **, int) = {&suggestion_by_insertion, NULL};
+
 // Represents a node in a hash table
 typedef struct node
 {
@@ -19,7 +21,6 @@ typedef struct node
 node;
 
 
-char *buffer;
 
 int free_counter = 0;
 
@@ -75,6 +76,7 @@ bool load(const char *dictionary)
 {
     
     static char buf_size = LENGTH;
+    static char *buffer;
 
     buffer = malloc(buf_size);
 
@@ -85,7 +87,7 @@ bool load(const char *dictionary)
     node *already_there;
     node *new_word;
     unsigned int hsh;
-    char len;
+    unsigned char len;
 
     while ( fgets ( buffer, buf_size, file ) != NULL )
     {
@@ -136,4 +138,77 @@ bool unload(void)
         free(places[i]);
     }
     return true;
+}
+
+
+int suggestion_by_insertion(char *word, char **suggestions, int limit)
+{
+    printf("\nSomebody called me on the word %s\n", word);
+    
+    int added = 0;
+    int word_len = strlen(word) + 1;
+    char word_copy[word_len+1];
+
+    for(int i = 0; i < word_len; i++)
+    {
+        for(char c = 'a'; c <= 'z'; c++)
+        {
+            for(int j = 0, k = 0; j < word_len + 1; j++)
+            {
+                if ( j == i)
+                {
+                    word_copy[k++] = c;
+                }    
+                word_copy[k++] = word[j];
+            }
+
+            word_copy[word_len] = '\0';
+            
+            if (check(word_copy))
+            {
+                printf("\n Added %s as suggestion for %s\n", word_copy, word);
+                strcpy(*suggestions++, word_copy);
+                added++;
+            }
+            if(added == limit)
+                return added;
+        }
+    }
+
+    return added;
+    
+
+}
+
+int getSuggestionsCustom(char *misspelled_word, char **suggestions,
+        int (*suggest)(char *, char **, int), int limit)
+{
+    int size = 0;
+    
+    while(size < limit && size >= 0)
+    {
+        size += suggest(misspelled_word, suggestions++, 1);
+
+        if(!size) --size;
+    }
+    
+    if (size < 0)
+        return 0;
+
+    return size;
+}
+
+
+int getSuggestions(char *misspelled_word, char **suggestions, int limit)
+{
+
+    int num_of_suggestions;
+
+    for(int i = 0; i < limit; i++)
+    {
+        num_of_suggestions += getSuggestionsCustom(misspelled_word, suggestions, default_suggestion_funcs[0], 1);
+    }
+
+    return num_of_suggestions;
+
 }
