@@ -119,6 +119,7 @@ bool load(const char *dictionary)
         buffer = malloc(buf_size);
     }
 
+    free(buffer); //last extraneous buffer allocation
     fclose(file);
     return true;
 }
@@ -149,7 +150,7 @@ int suggestion_by_insertion(char *word, char **suggestions, int limit)
     int word_len = strlen(word) + 1;
     char word_copy[word_len+1];
 
-    for(int i = 0; i < word_len; i++)
+    for(int i = 0; i < word_len + 1; i++)
     {
         for(char c = 'a'; c <= 'z'; c++)
         {
@@ -162,8 +163,6 @@ int suggestion_by_insertion(char *word, char **suggestions, int limit)
                 word_copy[k++] = word[j];
             }
 
-            word_copy[word_len] = '\0';
-            
             if (check(word_copy))
             {
                 printf("\n Added %s as suggestion for %s\n", word_copy, word);
@@ -183,19 +182,9 @@ int suggestion_by_insertion(char *word, char **suggestions, int limit)
 int getSuggestionsCustom(char *misspelled_word, char **suggestions,
         int (*suggest)(char *, char **, int), int limit)
 {
-    int size = 0;
     
-    while(size < limit && size >= 0)
-    {
-        size += suggest(misspelled_word, suggestions++, 1);
-
-        if(!size) --size;
-    }
-    
-    if (size < 0)
-        return 0;
-
-    return size;
+    return suggest(misspelled_word, suggestions, limit);
+        
 }
 
 
