@@ -10,7 +10,7 @@
 //size of the hash table
 #define N 143107
 
-int (*default_suggestion_funcs[])(char *, char **, int) = {&suggestion_by_insertion, NULL};
+int (*default_suggestion_funcs[])(char *, char **, int) = {&suggestion_by_insertion};
 
 // Represents a node in a hash table
 typedef struct node
@@ -41,7 +41,7 @@ bool check(const char *word)
     word_len = strlen(word);
     char word_lower[word_len+1];
 
-    for(int i = 0; word_lower[i]= word[i]; i++)
+    for(int i = 0; (word_lower[i] = word[i]) != '\0'; i++)
         //make it lower case
 	    if(word_lower[i]>=65 && word_lower[i]<=92)
             word_lower[i] += 32;
@@ -144,8 +144,6 @@ bool unload(void)
 
 int suggestion_by_insertion(char *word, char **suggestions, int limit)
 {
-    printf("\nSomebody called me on the word %s\n", word);
-    
     int added = 0;
     int word_len = strlen(word) + 1;
     char word_copy[word_len+1];
@@ -165,7 +163,7 @@ int suggestion_by_insertion(char *word, char **suggestions, int limit)
 
             if (check(word_copy))
             {
-                printf("\n Added %s as suggestion for %s\n", word_copy, word);
+                printf("\nsuggestion_by_insertion: added %s as suggestion for %s\n", word_copy, word);
                 strcpy(*suggestions++, word_copy);
                 added++;
             }
@@ -179,23 +177,23 @@ int suggestion_by_insertion(char *word, char **suggestions, int limit)
 
 }
 
-int getSuggestionsCustom(char *misspelled_word, char **suggestions,
-        int (*suggest)(char *, char **, int), int limit)
-{
-    
-    return suggest(misspelled_word, suggestions, limit);
-        
-}
-
-
 int getSuggestions(char *misspelled_word, char **suggestions, int limit)
 {
 
-    int num_of_suggestions;
+    int num_of_suggestions = 0;
+    int num_of_funcs = sizeof(default_suggestion_funcs)/sizeof(default_suggestion_funcs[0]);
+    int limit_for_one_func = limit/num_of_funcs;
 
-    for(int i = 0; i < limit; i++)
+    for(int i = 0; i < num_of_funcs; i++)
     {
-        num_of_suggestions += getSuggestionsCustom(misspelled_word, suggestions, default_suggestion_funcs[0], 1);
+        /*
+         * default_suggestion_funcs defines functions of the form: suggest(char *word, char **suggestion, int limit) where
+         * word -- the word to generate suggestions for
+         * suggestions -- the string array to store the generated suggestions
+         * limit -- the maximum number of suggestions to store
+         */
+        
+        num_of_suggestions += default_suggestion_funcs[i](misspelled_word, suggestions, limit_for_one_func);
     }
 
     return num_of_suggestions;

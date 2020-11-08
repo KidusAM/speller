@@ -68,9 +68,15 @@ int main(int argc, char *argv[])
     char word[LENGTH + 1];
 
 
-    char *suggestions[1];
-    char suggested_word[LENGTH];
-    suggestions[0] = suggested_word;
+    //allocate the array for holding the suggestions
+    const int MAX_SUGGESTIONS = 10;
+    char suggestion_words[MAX_SUGGESTIONS * LENGTH]; //allocate stack-space for storing max-length suggestions
+
+    char *suggestions[MAX_SUGGESTIONS];
+    for(int l = 0; l < MAX_SUGGESTIONS; l++)
+        suggestions[l] = &suggestion_words[l * LENGTH]; //simulate a 2d array
+
+
     // Spell-check each word in text
     for (int c = fgetc(file); c != EOF; c = fgetc(file))
     {
@@ -84,8 +90,7 @@ int main(int argc, char *argv[])
             // Ignore alphabetical strings too long to be words
             if (index > LENGTH)
             {
-                // Consume remainder of alphabetical string
-                while ((c = fgetc(file)) != EOF && isalpha(c));
+                // Consume remainder of alphabetical string while ((c = fgetc(file)) != EOF && isalpha(c));
 
                 // Prepare for new word
                 index = 0;
@@ -115,10 +120,11 @@ int main(int argc, char *argv[])
             getrusage(RUSAGE_SELF, &before);
             bool misspelled = !check(word);
 
+            // offer suggestion if the word is misspelled
             if(misspelled)
             {
-                if( getSuggestions(word, suggestions, 1) )
-                    printf("%s", *suggestions);
+                if( getSuggestions(word, suggestions, 9) )
+                    printf("%s\n", *suggestions);
             }
 
             getrusage(RUSAGE_SELF, &after);
